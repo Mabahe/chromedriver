@@ -1,5 +1,5 @@
 {
-  "name": "mabahe/chromedriver",
+  "name": "lbaey/chromedriver",
   "description": "Utility for installing Chromedriver, whatever platform you are on, for use with Behat",
   "keywords": [
     "Chromedriver",
