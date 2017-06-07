@@ -21,6 +21,7 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Filesystem;
 use Composer\Util\RemoteFilesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Laurent Baey <laurent.baey@gmail.com>
@@ -114,8 +115,22 @@ class ChromeDriverPlugin implements PluginInterface, EventSubscriberInterface
 
         $this->guessPlatform();
 
+        $chromeDriverPath = $config->get('bin-dir') . DIRECTORY_SEPARATOR . $this->getExecutableFileName();
+        $output = '';
+
+        if (file_exists($chromeDriverPath) && is_executable($chromeDriverPath)) {
+            $processExecutor = new ProcessExecutor($this->io);
+            $processExecutor::setTimeout(10);
+            $processExecutor->execute($chromeDriverPath . ' --version', $output);
+            // right version? => nothing to do
+            if (strpos($output, 'ChromeDriver ' . $version) === 0) {
+                $this->io->write(sprintf('The right version %s of ChromeDriver is already installed', $version));
+                return;
+            }
+        }
+
         $this->io->write(sprintf(
-            "Downloading Chromedriver version %s for %s",
+            "Downloading ChromeDriver version %s for %s",
             $version,
             $this->getPlatformNames()[$this->platform]
         ));
@@ -165,7 +180,7 @@ class ChromeDriverPlugin implements PluginInterface, EventSubscriberInterface
 
         $extra = $this->composer->getPackage()->getExtra();
         if (empty($extra['lbaey/chromedriver']['bypass-select'])) {
-          $this->platform = $this->io->select('Please select the platform :', $this->getPlatformNames(), $this->platform);
+            $this->platform = $this->io->select('Please select the platform :', $this->getPlatformNames(), $this->platform);
         }
     }
 
